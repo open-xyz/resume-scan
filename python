@@ -1,0 +1,48 @@
+import fitz  # PyMuPDF
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+
+# Download NLTK data
+nltk.download('punkt')
+nltk.download('stopwords')
+
+def extract_text_from_pdf(pdf_path):
+    """Extract text from a PDF file."""
+    document = fitz.open(pdf_path)
+    text = ""
+    for page_num in range(len(document)):
+        page = document.load_page(page_num)
+        text += page.get_text()
+    return text
+
+def preprocess_text(text):
+    """Preprocess text by tokenizing and removing stopwords."""
+    tokens = word_tokenize(text.lower())
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [word for word in tokens if word.isalnum() and word not in stop_words]
+    return filtered_tokens
+
+def scan_resume(text, keywords):
+    """Scan the resume text for specific keywords."""
+    matches = []
+    for keyword in keywords:
+        if re.search(r'\b' + re.escape(keyword.lower()) + r'\b', text):
+            matches.append(keyword)
+    return matches
+
+# Define the path to the resume PDF and the keywords to search for
+pdf_path = "path_to_resume.pdf"
+keywords = ["Python", "Project Management", "Machine Learning", "SQL", "Communication Skills"]
+
+# Extract and preprocess text from the resume
+resume_text = extract_text_from_pdf(pdf_path)
+processed_text = preprocess_text(resume_text)
+
+# Scan the resume for keywords
+matches = scan_resume(" ".join(processed_text), keywords)
+
+print("Keywords found in the resume:")
+for match in matches:
+    print(match)
